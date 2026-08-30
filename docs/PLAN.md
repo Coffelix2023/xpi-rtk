@@ -40,7 +40,7 @@
 - [x] T5 vitest 测试:state 优先级矩阵 / rewrite exit-code 映射 / bash-only guard(mock,不依赖真实 rtk)
 - [x] T6 三绿:`pnpm typecheck` + `pnpm -w run lint` + `pnpm test`
 - [x] T7 冒烟:`pi -e ./src/index.ts`(print 模式:`git status` 输出已是 rtk 紧凑格式 `* main`;TUI 冒烟留给安装后循环)
-- [ ] T8 git:`feat/rtk-mvp` 分支 + 小粒度 Conventional Commits(显式 add;推送/发布等用户确认)
+- [x] T8 git:`feat/rtk-mvp` 分支 + 小粒度 Conventional Commits(显式 add;推送/发布等用户确认)
 
 ## 3. 验证门(每个 T 后运行)
 
