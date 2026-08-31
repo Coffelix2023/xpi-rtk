@@ -24,7 +24,6 @@ coverage/
 # os
 .DS_Store
 
-# c6x: nested mise.toml copies (see eb6bc17)
+# c6x: local-only files (see eb6bc17, 1f0a)
 **/mise.toml
-**/docs
-**/AGENTS.md
+**/PLAN*
