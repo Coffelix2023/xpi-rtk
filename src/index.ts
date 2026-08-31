@@ -4,8 +4,19 @@
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { type FooterHandle, mountFooter, statusIndicator } from "./lib/footer.ts";
-import { probeRtk, REWRITE_TIMEOUT_MS, rewriteCommand } from "./lib/rtk.ts";
-import { applyToggle, effectiveEnabled } from "./lib/state.ts";
+import {
+  probeRtk,
+  REWRITE_TIMEOUT_MS,
+  type RtkProbe,
+  rewriteCommand,
+} from "./lib/rtk.ts";
+import { runSetupCheck } from "./lib/setup.ts";
+import {
+  applyToggle,
+  effectiveEnabled,
+  stateFilePath,
+  writeDeclinedSetup,
+} from "./lib/state.ts";
 
 const VERSION = "0.1.0";
 const WS_SPLIT_RE = /\s+/;
@@ -13,28 +24,35 @@ const WS_SPLIT_RE = /\s+/;
 export default function xpiRtk(pi: ExtensionAPI): void {
   // 启动探测一次;后续 tool_call 直接 await 已完成的 promise(微秒级)。
   const probePromise = probeRtk(pi);
-  // probe 结果的同步快照(footer 渲染在同步路径里读,不能 await)。
-  let probeState = {
+  // probe 结果的同步快照(footer/tool_call 渲染在同步路径里读,不能 await)。
+  let probeState: RtkProbe = {
     ok: false,
+    reason: null,
+    version: null,
   };
   let footer: FooterHandle | undefined;
   const refreshFooter = (): void => footer?.requestRender();
 
-  void probePromise.then((probe) => {
-    probeState = {
-      ok: probe.ok,
-    };
+  const applyProbe = (probe: RtkProbe): void => {
+    probeState = probe;
     if (!probe.ok) {
       console.warn(`[xpi-rtk] ${probe.reason} — 改写功能停用(命令将原样执行)`);
     }
-    footer?.requestRender();
-  });
+    refreshFooter();
+  };
+
+  void probePromise.then(applyProbe);
 
   pi.on("session_start", (_event, ctx) => {
     footer?.unmount(); // reload/new 会话重挂,避免旧 footer 残留
     footer = mountFooter(ctx, {
       enabled: () => effectiveEnabled(process.env),
       probeOk: () => probeState.ok,
+    });
+    // 启动自检:rtk 缺失/过旧时征询安装/升级(同意则更新 probeState + footer)。
+    void probePromise.then(async (probe) => {
+      const after = await runSetupCheck(pi, ctx, probe, stateFilePath());
+      if (after !== probe) applyProbe(after);
     });
   });
 
@@ -60,9 +78,18 @@ export default function xpiRtk(pi: ExtensionAPI): void {
   });
 
   pi.registerCommand("rtk", {
-    description: `rtk 开关与信息面板 ${VERSION}(on | off | toggle | status)`,
+    description: `rtk 开关与信息面板 ${VERSION}(on | off | toggle | status | setup)`,
     handler: async (args, ctx) => {
       const sub = args.trim().split(WS_SPLIT_RE)[0] || "status";
+      if (sub === "setup") {
+        writeDeclinedSetup(false); // 手动触发 = 重新给机会,清掉拒绝标记
+        const probe = await probePromise;
+        const after = await runSetupCheck(pi, ctx, probe, stateFilePath());
+        if (after !== probe) applyProbe(after);
+        else if (probe.ok)
+          ctx.ui.notify(`rtk ${probe.version} 已就绪,无需安装`, "info");
+        return;
+      }
       switch (sub) {
         case "on": {
           const enabled = applyToggle("on");
