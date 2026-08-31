@@ -26,3 +26,5 @@ coverage/
 
 # c6x: nested mise.toml copies (see eb6bc17)
 **/mise.toml
+**/docs
+**/AGENTS.md
