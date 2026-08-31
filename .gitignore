@@ -1,16 +1,28 @@
+# node
 node_modules/
+
+# build artifacts
 dist/
-*.log
-.DS_Store
+*.tsbuildinfo
+
+# pnpm
+pnpm-debug.log*
+
+# biome
+.biome/
+
+# vitest
+coverage/
+
+# env / secrets
 .env
 .env.*
 !.env.example
 *.pem
 *.key
-.next/
-__pycache__/
-.venv/
-coverage/
 
-# c6x
+# os
+.DS_Store
+
+# c6x: nested mise.toml copies (see eb6bc17)
 **/mise.toml
