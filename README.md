@@ -17,14 +17,10 @@ most of it is noise your LLM pays for on every call.
 |---------|-------------|----------|
 | `git status` | `On branch…` + 15 lines | `* main` + `clean — nothing to commit` |
 | `ls` | bare names, no size | names + sizes in one compact line |
-
 ## Install
 
-Requires [rtk](https://github.com/rtk-ai/rtk) ≥ 0.23.0 in your `PATH`
-(`brew install rtk-ai/tap/rtk`).
-
 ```bash
-pi install git:github.com/Coffelix2023/xpi-rtk@v0.1.0
+pi install git:github.com/Coffelix2023/xpi-rtk
 ```
 
 Try without installing:
@@ -33,6 +29,12 @@ Try without installing:
 pi -e git:github.com/Coffelix2023/xpi-rtk
 ```
 
+
+On first startup the extension checks for [rtk](https://github.com/rtk-ai/rtk) (≥ 0.23.0)
+in your `PATH`. If it's missing, xpi-rtk asks whether to install the latest rtk for you
+(`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh`);
+decline and the extension stays inactive. If your rtk is old but still ≥ 0.23.0, it
+keeps working — no forced upgrade.
 ## Usage
 
 No configuration. Once loaded, every `bash` tool call is transparently rewritten
@@ -46,6 +48,7 @@ or slow, commands run unchanged.
 | `/rtk status` | version + on/off state + cumulative token gain (`rtk gain -p`) |
 | `/rtk on` / `/rtk off` | persistent switch (survives restarts) |
 | `/rtk toggle` | flip the switch |
+| `/rtk setup` | re-run the rtk install/upgrade prompt (clears a previous decline) |
 
 The footer indicator shows the live state: `● rtk:on` / `○ rtk:off`.
 
@@ -65,7 +68,7 @@ tool_call (bash) ──> rtk rewrite <cmd> ──exit 0/3──> run rewritten c
                        └─ missing / slow / off ──── pass-through (fail-open)
 ```
 
-- Zero-sync: rule updates come from `brew upgrade rtk`; no bundled rule table.
+- Zero-sync: rule updates come from upgrading rtk itself; no bundled rule table.
 - bash-only by design: pi's `read` tool anchors edits by line number, so its
   output must never be rewritten.
 - Scope: switch + panel + wiring. No local rules, no `/rtk sync`, no read rewrite.
@@ -74,3 +77,9 @@ tool_call (bash) ──> rtk rewrite <cmd> ──exit 0/3──> run rewritten c
 
 MIT — see [LICENSE](LICENSE). rtk is an external dependency licensed under
 Apache-2.0 by its own project; see [NOTICE.md](NOTICE.md).
+
+## Acknowledgments
+
+All the heavy lifting — the 100+ output filters — is done by [rtk](https://github.com/rtk-ai/rtk)
+(Rust Token Killer), an excellent Apache-2.0 project. xpi-rtk is just the switch,
+the panel, and the wiring. Thanks to the rtk team.

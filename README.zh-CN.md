@@ -17,11 +17,8 @@ LLM 每次调用都在付费的噪音。
 
 ## 安装
 
-要求 [rtk](https://github.com/rtk-ai/rtk) ≥ 0.23.0 在 `PATH` 中
-(`brew install rtk-ai/tap/rtk`)。
-
 ```bash
-pi install git:github.com/Coffelix2023/xpi-rtk@v0.1.0
+pi install git:github.com/Coffelix2023/xpi-rtk
 ```
 
 免安装试用:
@@ -29,6 +26,11 @@ pi install git:github.com/Coffelix2023/xpi-rtk@v0.1.0
 ```bash
 pi -e git:github.com/Coffelix2023/xpi-rtk
 ```
+
+首次启动时,扩展会检查 `PATH` 中是否有 [rtk](https://github.com/rtk-ai/rtk)(≥ 0.23.0)。
+若缺失,xpi-rtk 会询问是否帮你安装最新版 rtk
+(`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh`);
+拒绝则本扩展保持停用。若本地 rtk 版本较旧但仍 ≥ 0.23.0,可正常使用,不强制升级。
 
 ## 使用
 
@@ -42,6 +44,7 @@ Fail-open:rtk 缺失、过旧或超时,命令原样执行,永不阻塞。
 | `/rtk status` | 版本 + 开关状态 + 累计 token 收益(`rtk gain -p`) |
 | `/rtk on` / `/rtk off` | 持久开关(重启后仍生效) |
 | `/rtk toggle` | 切换开关 |
+| `/rtk setup` | 重新触发 rtk 安装/升级询问(清除之前的拒绝标记) |
 
 Footer 指示灯实时显示状态:`● rtk:on` / `○ rtk:off`。
 
@@ -61,10 +64,15 @@ tool_call (bash) ──> rtk rewrite <cmd> ──exit 0/3──> 执行改写后
                        └─ 缺失 / 过旧 / 超时 / 关 ── 放行(fail-open)
 ```
 
-- 零同步:规则更新来自 `brew upgrade rtk`,仓库内不内置规则表。
+- 零同步:规则更新来自升级 rtk 本身,仓库内不内置规则表。
 - 仅 bash:pi 的 `read` 工具按行号锚定编辑,其输出绝不能被改写——这是正确性约束。
 - 范围:开关 + 面板 + 接线。不做本地规则、不做 `/rtk sync`、不改写 read。
 
 ## 许可证
 
 MIT — 见 [LICENSE](LICENSE)。rtk 是外部依赖,由其上游项目以 Apache-2.0 授权;见 [NOTICE.md](NOTICE.md)。
+
+## 致谢
+
+真正的重活——100+ 条输出过滤规则——全部由 [rtk](https://github.com/rtk-ai/rtk)
+(Rust Token Killer)完成,这是一个优秀的 Apache-2.0 项目。xpi-rtk 只是开关、面板和接线。感谢 rtk 团队。
