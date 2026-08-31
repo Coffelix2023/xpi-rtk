@@ -18,7 +18,7 @@ import {
   writeDeclinedSetup,
 } from "./lib/state.ts";
 
-const VERSION = "0.1.1";
+const VERSION = "0.1.2";
 const WS_SPLIT_RE = /\s+/;
 
 export default function xpiRtk(pi: ExtensionAPI): void {
@@ -31,7 +31,8 @@ export default function xpiRtk(pi: ExtensionAPI): void {
     version: null,
   };
   let footer: FooterHandle | undefined;
-  const refreshFooter = (): void => footer?.requestRender();
+  // setStatus 自带 requestRender;refresh 在 probe 落地/开关切换后重算状态文本。
+  const refreshFooter = (): void => footer?.refresh();
 
   const applyProbe = (probe: RtkProbe): void => {
     probeState = probe;
