@@ -3,6 +3,7 @@
 // 全路径 fail-open:任何异常不阻塞命令执行。
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { type FooterHandle, mountFooter, statusIndicator } from "./lib/footer.ts";
 import { probeRtk, REWRITE_TIMEOUT_MS, rewriteCommand } from "./lib/rtk.ts";
 import { applyToggle, effectiveEnabled } from "./lib/state.ts";
 
@@ -12,10 +13,29 @@ const WS_SPLIT_RE = /\s+/;
 export default function xpiRtk(pi: ExtensionAPI): void {
   // 启动探测一次;后续 tool_call 直接 await 已完成的 promise(微秒级)。
   const probePromise = probeRtk(pi);
+  // probe 结果的同步快照(footer 渲染在同步路径里读,不能 await)。
+  let probeState = {
+    ok: false,
+  };
+  let footer: FooterHandle | undefined;
+  const refreshFooter = (): void => footer?.requestRender();
+
   void probePromise.then((probe) => {
+    probeState = {
+      ok: probe.ok,
+    };
     if (!probe.ok) {
       console.warn(`[xpi-rtk] ${probe.reason} — 改写功能停用(命令将原样执行)`);
     }
+    footer?.requestRender();
+  });
+
+  pi.on("session_start", (_event, ctx) => {
+    footer?.unmount(); // reload/new 会话重挂,避免旧 footer 残留
+    footer = mountFooter(ctx, {
+      enabled: () => effectiveEnabled(process.env),
+      probeOk: () => probeState.ok,
+    });
   });
 
   pi.on("tool_call", async (event, ctx) => {
@@ -50,16 +70,19 @@ export default function xpiRtk(pi: ExtensionAPI): void {
             enabled ? "rtk 已开启" : "rtk 已开启(状态文件写入失败,本次会话仍可能放行)",
             "info",
           );
+          refreshFooter();
           break;
         }
         case "off": {
           const enabled = applyToggle("off");
           ctx.ui.notify(enabled ? "rtk 已开启" : "rtk 已关闭(重启后仍生效)", "info");
+          refreshFooter();
           break;
         }
         case "toggle": {
           const enabled = applyToggle("toggle");
           ctx.ui.notify(enabled ? "rtk 已开启" : "rtk 已关闭(重启后仍生效)", "info");
+          refreshFooter();
           break;
         }
         case "status": {
@@ -80,7 +103,7 @@ export default function xpiRtk(pi: ExtensionAPI): void {
               ? `\n${result.stdout.trim()}`
               : `\n(rtk gain 执行失败,退出码 ${result.code})`;
           ctx.ui.notify(
-            `rtk ${probe.version ?? "未检测到"} · ${effectiveEnabled(process.env) ? "开启" : "关闭"}${gain}`,
+            `rtk ${probe.version ?? "未检测到"} · ${effectiveEnabled(process.env) ? "开启" : "关闭"} · ${statusIndicator(effectiveEnabled(process.env), probe.ok)}${gain}`,
             "info",
           );
           break;
