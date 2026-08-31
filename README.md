@@ -17,6 +17,28 @@ most of it is noise your LLM pays for on every call.
 |---------|-------------|----------|
 | `git status` | `On branch…` + 15 lines | `* main` + `clean — nothing to commit` |
 | `ls` | bare names, no size | names + sizes in one compact line |
+
+**Why an extension, when `rtk init` exists?** The official `rtk init -g` wires rtk into
+a CLI by patching its settings.json and injecting an RTK.md instruction file. That works
+for CLIs without an extension system — but pi has one. xpi-rtk is the native way:
+
+- **No `rtk init` needed** — the extension *is* the hook. No settings.json patching,
+  no RTK.md injection, nothing to undo when you remove it.
+- **One-key switch** — `/rtk off` (or the footer indicator) silences rewriting instantly,
+  persisted across restarts. `rtk init` offers no equivalent.
+- **Zero maintenance** — rule updates ride along with `brew upgrade rtk`; the extension
+  never bundles or syncs rules.
+- **First-run bootstrap** — missing or outdated rtk? xpi-rtk offers to install/upgrade it
+  for you, using rtk's official installer.
+
+### Features at a glance
+
+- Transparent `bash` → `rtk rewrite` interception (fail-open, bash-only)
+- Persistent on/off switch with env override (`RTK_DISABLED=1`)
+- Footer status chip: `● rtk:on` / `○ rtk:off` (plays nice with other footer extensions)
+- `/rtk status` panel with cumulative token gain from `rtk gain -p`
+- First-run setup assistant (install/upgrade rtk via official script)
+
 ## Install
 
 ```bash

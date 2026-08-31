@@ -15,6 +15,22 @@ LLM 每次调用都在付费的噪音。
 | `git status` | `On branch…` + 15 行 | `* main` + `clean — nothing to commit` |
 | `ls` | 纯文件名 | 文件名 + 大小,一行紧凑输出 |
 
+**已有 `rtk init`,为什么还要这个扩展?** 官方 `rtk init -g` 靠改写目标 CLI 的 settings.json、
+注入 RTK.md 指令文件来接入 rtk——那是给没有扩展机制的 CLI 准备的。pi 有原生扩展系统,xpi-rtk 就是原生方式:
+
+- **免 `rtk init`** —— 扩展本身就是 hook。不改 settings.json、不注入 RTK.md、卸载无残留。
+- **一键开关** —— `/rtk off`(或 footer 指示灯)即时停止改写,重启后仍生效。`rtk init` 做不到。
+- **零维护** —— 规则更新随 `brew upgrade rtk` 自动同步,扩展不内置、不同步任何规则表。
+- **首启自举** —— rtk 缺失或过旧?扩展用 rtk 官方安装脚本帮你装/升。
+
+### 特性一览
+
+- 透明拦截 `bash` → `rtk rewrite`(fail-open,仅 bash)
+- 持久开关 + 环境变量覆盖(`RTK_DISABLED=1`)
+- Footer 状态芯片:`● rtk:on` / `○ rtk:off`(与其他 footer 扩展友好共存)
+- `/rtk status` 面板:来自 `rtk gain -p` 的累计 token 收益
+- 首启安装助手(官方脚本安装/升级 rtk)
+
 ## 安装
 
 ```bash
