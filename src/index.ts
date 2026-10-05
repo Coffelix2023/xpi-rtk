@@ -18,7 +18,7 @@ import {
   writeDeclinedSetup,
 } from "./lib/state.ts";
 
-const VERSION = "0.1.2";
+const VERSION = "0.1.3";
 const WS_SPLIT_RE = /\s+/;
 
 export default function xpiRtk(pi: ExtensionAPI): void {
