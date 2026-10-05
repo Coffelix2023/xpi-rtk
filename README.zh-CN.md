@@ -48,6 +48,8 @@ pi -e git:github.com/Coffelix2023/xpi-rtk
 (`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh`);
 拒绝则本扩展保持停用。若本地 rtk 版本较旧但仍 ≥ 0.23.0,可正常使用,不强制升级。
 
+**兼容性:**针对 pi 1.0.2(`@earendil-works/pi-coding-agent` 1.0.2)开发与类型检查通过;未强制最低版本。
+
 ## 使用
 
 零配置。加载后,每次 `bash` 工具调用都会先经 `rtk rewrite` 透明改写再执行。

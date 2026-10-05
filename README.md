@@ -57,6 +57,10 @@ in your `PATH`. If it's missing, xpi-rtk asks whether to install the latest rtk 
 (`curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh`);
 decline and the extension stays inactive. If your rtk is old but still ≥ 0.23.0, it
 keeps working — no forced upgrade.
+
+**Compatibility:** developed and type-checked against pi 1.0.2
+(`@earendil-works/pi-coding-agent` 1.0.2); no hard minimum is enforced.
+
 ## Usage
 
 No configuration. Once loaded, every `bash` tool call is transparently rewritten
