@@ -9,13 +9,14 @@
 
 - `xpi-rtk` 目前按**阶段一**处理：单人快速迭代优先。
 - 当前仓库不启用 `release-please`。
-- 无远端、无历史提交的新脚手架允许在当前主分支创建首次本地提交；这是直推保护分支规则之外的初始化例外。
+- 阶段一是单人快速迭代：用户显式要求「不设分支」时，允许直接在 `main` 上小粒度提交并推送，不走分支 + PR。这是直推保护分支规则在本仓库的固定例外。
+- 删分支只限已验证为 `main` 祖先的分支（先 `git merge-base --is-ancestor <branch> main`，再用 `git branch -d`）；未合并分支一律不删。删除后用 `git remote set-head origin -a` 把 `origin/HEAD` 修正到 `main`。
 - 如果以后切到阶段二，再把流程改成“分支 + PR + 人工合并”为主。
 
 ## 本仓库约束
 
-- 默认不直推保护分支。
-- 不强推、不删分支、不改 GitHub ruleset / branch protection / 仓库 settings。
+- 默认不直推保护分支；用户显式要求「不设分支」时按指令直推 `main`（见「当前阶段」）。
+- 不强推、不删未合并分支、不改 GitHub ruleset / branch protection / 仓库 settings。
 - 不绕过 git hooks。
 - 不把密钥 / Token 写入代码、日志、示例、文档。
 - `.github/` 目录的变更必须先告知用户。
